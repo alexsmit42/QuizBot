@@ -7,5 +7,7 @@ mongoose.connect(
     {
         autoReconnect: true
     }
-);
+).catch(err => {
+
+});
 module.exports = mongoose;

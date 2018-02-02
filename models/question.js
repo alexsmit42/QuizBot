@@ -10,7 +10,15 @@ let QuestionSchema = Schema({
     answers: {
         type: Array,
         required: true
-    }
+    },
+    locale: {
+        type: String,
+        required: true
+    },
+    createDate: {
+        type: Date,
+        default: Date.now
+    },
 });
 
 module.exports = mongoose.model('Question', QuestionSchema);
