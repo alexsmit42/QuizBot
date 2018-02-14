@@ -40,11 +40,25 @@ bot.command('question')
     .invoke(function(ctx){
         utils.getQuestion(ctx.meta.user.id, ctx.session.locale, function(question) {
             if (question) {
-                return ctx.sendMessage('question.found');
+
+                let answers = [{}, {}, {}, {}];
+                answers[0][question.answers[0]] = '0';
+                answers[1][question.answers[1]] = '1';
+                answers[2][question.answers[2]] = '2';
+                answers[3][question.answers[3]] = '3';
+
+                ctx.keyboard([
+                    answers
+                ]);
+
+                return ctx.sendMessage(question.question);
             } else {
                 return ctx.sendMessage('question.not_found');
             }
         });
+    })
+    .answer(function(ctx){
+        console.log(ctx.answer);
     });
 
 bot.command('setting_locale')
