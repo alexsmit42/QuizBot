@@ -1,6 +1,0 @@
-main:
-  hello: 'Hello, <%=user.first_name%>!'
-
-settings:
-  locale: 'Please, check your language'
-  locale_success: 'English is setting'

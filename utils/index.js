@@ -15,9 +15,19 @@ module.exports = {
                 _id: {$nin: logs}
             }).then(question => {
                 callback(question);
+            }).catch(err => {
+
             });
         }).catch(err => {
-            console.log(err);
+            // console.log(err);
         });
+    },
+
+    shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
     }
 };

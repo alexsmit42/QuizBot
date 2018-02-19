@@ -1,6 +1,0 @@
-main:
-  hello: 'Привет, <%=user.first_name%>!'
-
-settings:
-  locale: 'Пожалуйста, выберите язык'
-  locale_success: 'Установлен русский язык'

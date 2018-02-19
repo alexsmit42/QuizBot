@@ -1,101 +1,79 @@
-process.env["NTBA_FIX_319"] = 1;
-
-let bb = require('bot-brother');
+let botgram = require('botgram');
 let config = require('config');
 let utils = require('./utils');
-let texts = require('./texts');
+let i18n = require('i18n');
 
 /* DB */
 require('./utils/mongoose');
 
-let token = config.get('token');
-let bot = bb({
-    key: config.get('token'),
-    sessionManager: bb.sessionManager.redis(config.get('redis')),
-    polling: {interval: 0, timeout: 1}
-})
-.texts(texts.ru, {locale: 'ru'})
-.texts(texts.en, {locale: 'en'})
-.texts(texts.default)
-.use('before', bb.middlewares.typing())
-.use('before', bb.middlewares.botanio(config.get('botanio')))
-.use('before', function(ctx){
-    ctx.data.user = ctx.meta.user;
+let bot = botgram(config.get('token'));
 
-    ctx.session.createDate = ctx.session.createDate || Date.now();
+bot.context({i18n: {}});
 
-    ctx.setLocale(ctx.session.locale || config.get('defaults.locale'));
 
-    if (!/^setting_locale/.test(ctx.command.name) && !ctx.session.locale) {
-        return ctx.go('setting_locale');
+bot.all((msg, reply, next) => {
+    if (!Object.keys(msg.context.i18n).length) {
+        reply.command('set_locale');
     }
+
+    // next();
 });
 
-bot.command('start')
-    .invoke(function(ctx) {
-        return ctx.sendMessage('main.hello');
+bot.command('start', (msg, reply) => {
+
+    reply.text(i18n.__('hello %s', msg.user.firstname));
+});
+
+bot.command('set_locale', (msg, reply) => {
+    i18n.configure({
+        locales:['en', 'ru'],
+        defaultLocale: 'en',
+        directory: __dirname + '/locale',
+        extension: '.yml',
+        syncFiles: true,
+        updateFiles: true,
+        register: msg.context.i18n
     });
 
-bot.command('question')
-    .invoke(function(ctx){
-        utils.getQuestion(ctx.meta.user.id, ctx.session.locale, function(question) {
-            if (question) {
+    reply.text('Lang settings');
+});
 
-                let answers = [{}, {}, {}, {}];
-                answers[0][question.answers[0]] = '0';
-                answers[1][question.answers[1]] = '1';
-                answers[2][question.answers[2]] = '2';
-                answers[3][question.answers[3]] = '3';
+bot.command('question', (msg, reply, next) => {
+    utils.getQuestion(msg.user.id, msg.context.locale, function(question) {
+        if (question) {
 
-                ctx.keyboard([
-                    answers
-                ]);
+            let answers = question.answers.map((answer, index) => {
+                let callbackData = {
+                    questionID: question._id,
+                    isCorrect: "0"
+                };
 
-                return ctx.sendMessage(question.question);
-            } else {
-                return ctx.sendMessage('question.not_found');
-            }
-        });
-    })
-    .answer(function(ctx){
-        console.log(ctx.answer);
+                if (index === 0) {
+                    callbackData.isCorrect = "1";
+                }
+
+                return {
+                    text: answer,
+                    callback_data: JSON.stringify(callbackData)
+                };
+            });
+
+            reply.inlineKeyboard([utils.shuffle(answers)]);
+            reply.text(question.question);
+        } else {
+            // return ctx.sendMessage('question.not_found');
+            reply.text('Not questions');
+        }
     });
+});
 
-bot.command('setting_locale')
-    .invoke(function(ctx) {
-        return ctx.sendMessage('settings.locale');
-    })
-    .answer(function(ctx){
-        ctx.session.locale = ctx.answer;
-        ctx.setLocale(ctx.answer);
-        return ctx.sendMessage('settings.locale_success').then(function() {
-            return ctx.goBack();
-        });
-    })
-    .keyboard([
-        [
-            {'buttons.en': 'en'},
-            {'buttons.ru': 'ru'}
-        ]
-    ]);
+bot.callback((query, next) => {
+    let data;
+    try {
+        data = JSON.parse(query.data);
+    } catch (e) {
+        return next();
+    }
 
-// bot.onText(/\/start/, (msg) => {
-//     bot.sendMessage(msg.chat.id, `Witaj, ${msg.from.id}!`);
-// });
-//
-// bot.onText(/\/question/, (msg) => {
-//     Question.findOne()
-//         .then(res => {
-//             if (res) {
-//                 bot.sendMessage(msg.chat.id, 'Вопрос найден');
-//             } else {
-//                 bot.sendMessage(msg.chat.id, 'Вопрос не найден');
-//             }
-//         })
-//         .catch(err => {
-//             console.log(err);
-//         });
-// });
-
-
-
+    bot.reply(query.from.id).text('Thanks, your answer is ' + (data.isCorrect === '1' ? 'correct' : 'not correct'));
+});
