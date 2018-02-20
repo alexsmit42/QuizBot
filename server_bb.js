@@ -42,6 +42,35 @@ bot.command('question')
             if (question) {
                 let answers = [];
                 question.answers.forEach((answer, index) => {
+                    let isCorrect = false
+
+                    if (index === 0) {
+                        isCorrect = true;
+                    }
+
+                    answers.push({ [answer]: isCorrect });
+                });
+
+                ctx.keyboard([
+                    utils.shuffle(answers)
+                ]);
+
+                return ctx.sendMessage(question.question);
+            } else {
+                return ctx.sendMessage('question.not_found');
+            }
+        });
+    })
+    .callback(ctx => {
+        console.log(ctx);
+    });
+
+bot.command('question_i')
+    .invoke(ctx => {
+        utils.getQuestion(ctx.meta.user.id, ctx.session.locale, function(question) {
+            if (question) {
+                let answers = [];
+                question.answers.forEach((answer, index) => {
                     let callbackData = {
                         isCorrect: false
                     };
@@ -64,38 +93,7 @@ bot.command('question')
         });
     })
     .callback(ctx => {
-        // console.log(ctx);
-    });
-
-bot.command('question_i')
-    .invoke(ctx => {
-        utils.getQuestion(ctx.meta.user.id, ctx.session.locale, function(question) {
-            if (question) {
-                let answers = [];
-                question.answers.forEach((answer, index) => {
-                    let callbackData = {
-                        isCorrect: false
-                    };
-
-                    if (index === 0) {
-                        callbackData.isCorrect = true;
-                    }
-
-                    answers.push({ [answer]: callbackData });
-                });
-
-                ctx.inlineKeyboard([
-                    utils.shuffle(answers)
-                ]);
-
-                return ctx.sendMessage(question.question);
-            } else {
-                return ctx.sendMessage('question.not_found');
-            }
-        });
-    })
-    .callback(ctx => {
-        // console.log(ctx);
+        console.log(ctx);
     });
 
 bot.command('setting_locale')

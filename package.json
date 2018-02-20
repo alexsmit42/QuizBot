@@ -15,7 +15,10 @@
     "i18n": "^0.8.3",
     "js-yaml": "^3.10.0",
     "mongoose": "^5.0.5",
-    "redis": "^2.8.0"
+    "redis": "^2.8.0",
+    "telegraf": "^3.18.0",
+    "telegraf-i18n": "^6.0.4",
+    "telegraf-session-redis": "^5.0.0"
   },
   "devDependencies": {
     "bot-brother": "^2.1.5"

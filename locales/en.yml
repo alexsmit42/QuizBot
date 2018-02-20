@@ -1,0 +1,9 @@
+main:
+  hello: Hello!
+
+result:
+  correct: Answer is *correct*!
+  incorrect: Answer is *not correct* :(
+
+question:
+  not: You are played all questions on this language ¯\_(ツ)_/¯

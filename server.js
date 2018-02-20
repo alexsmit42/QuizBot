@@ -8,26 +8,34 @@ require('./utils/mongoose');
 
 let bot = botgram(config.get('token'));
 
-bot.context({i18n: {}});
-
-
-bot.all((msg, reply, next) => {
-    if (!Object.keys(msg.context.i18n).length) {
-        reply.command('set_locale');
-    }
-
-    // next();
+bot.context({
+    i18n: {}
 });
+//
+//
+// bot.all((msg, reply, next) => {
+//     if (!Object.keys(msg.context.i18n).length) {
+//         reply.command('set_locale');
+//     }
+//
+//     next();
+// });
 
 bot.command('start', (msg, reply) => {
 
-    reply.text(i18n.__('hello %s', msg.user.firstname));
+    reply.text(`Привет, ${msg.user.firstname}!`);
+    // reply.text(msg.context.i18n.__('hello %s', msg.user.firstname));
 });
 
-bot.command('set_locale', (msg, reply) => {
+bot.command('locale', (msg, reply) => {
+    let defaultLocale = 'en';
+    if (!Object.keys(msg.context.i18n).length) {
+        // defaultLocale = msg.context.i18n.getLocale();
+    }
+
     i18n.configure({
         locales:['en', 'ru'],
-        defaultLocale: 'en',
+        defaultLocale: defaultLocale,
         directory: __dirname + '/locale',
         extension: '.yml',
         syncFiles: true,
@@ -35,11 +43,30 @@ bot.command('set_locale', (msg, reply) => {
         register: msg.context.i18n
     });
 
-    reply.text('Lang settings');
+    msg.context.i18n = i18n;
+    console.log(msg);
+
+    let keyboard = [
+        {
+            text: msg.context.i18n.__('RU'),
+            callback_data: JSON.stringify({
+                newLanguage: 'ru'
+            })
+        },
+        {
+            text: msg.context.i18n.__('EN'),
+            callback_data: JSON.stringify({
+                newLanguage: 'en'
+            })
+        }
+    ];
+    reply.inlineKeyboard([keyboard]);
+
+    reply.text(msg.context.i18n.__('Language setting'));
 });
 
 bot.command('question', (msg, reply, next) => {
-    utils.getQuestion(msg.user.id, msg.context.locale, function(question) {
+    utils.getQuestion(msg.user.id, 'en', function(question) {
         if (question) {
 
             let answers = question.answers.map((answer, index) => {
@@ -62,7 +89,8 @@ bot.command('question', (msg, reply, next) => {
             reply.text(question.question);
         } else {
             // return ctx.sendMessage('question.not_found');
-            reply.text('Not questions');
+            // reply.text(msg.context.i18n.__('Not questions'));
+            reply.text('No questions');
         }
     });
 });
@@ -75,5 +103,12 @@ bot.callback((query, next) => {
         return next();
     }
 
-    bot.reply(query.from.id).text('Thanks, your answer is ' + (data.isCorrect === '1' ? 'correct' : 'not correct'));
+    if (data.questionID !== undefined) {
+        utils.setLog(query.message.user.id, data.questionID, data.isCorrect === '1');
+
+        bot.reply(query.from.id).text('Thanks, your answer is ' + (data.isCorrect === '1' ? 'correct' : 'not correct'));
+    } else if (data.newLanguage !== undefined) {
+        bot.reply(query.from.id).text('Language changed');
+    }
+
 });

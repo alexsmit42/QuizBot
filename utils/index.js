@@ -1,3 +1,4 @@
+let mongoose = require('../utils/mongoose');
 let Log = require('../models/log');
 let Question = require('../models/question');
 
@@ -9,7 +10,7 @@ module.exports = {
         }).then(logs => {
             logs = logs || [];
 
-            logs = logs.map(log => log.question._id);
+            logs = logs.map(log => log.question);
             Question.findOne({
                 locale: locale,
                 _id: {$nin: logs}
@@ -21,6 +22,14 @@ module.exports = {
         }).catch(err => {
             // console.log(err);
         });
+    },
+
+    setLog(user, question, isCorrectly) {
+        let params = {user, question, isCorrectly};
+        params._id = new mongoose.Types.ObjectId();
+
+        let log = new Log(params);
+        log.save();
     },
 
     shuffle(arr) {

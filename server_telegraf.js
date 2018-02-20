@@ -2,11 +2,11 @@ let Telegraf = require('telegraf');
 let TelegrafI18n = require('telegraf-i18n');
 let RedisSession = require('telegraf-session-redis');
 
-const Extra = require('telegraf/extra')
-const Markup = require('telegraf/markup')
+const Markup = require('telegraf/markup');
 
 let config = require('config');
 let path = require('path');
+let utils = require('./utils');
 
 let bot = new Telegraf(config.get('token'));
 
@@ -14,7 +14,7 @@ const i18n = new TelegrafI18n({
     defaultLanguage: 'en',
     allowMissing: true,
     useSession: true,
-    directory: path.resolve(__dirname, 'locale')
+    directory: path.resolve(__dirname, 'locales')
 });
 
 const session = new RedisSession({
@@ -32,24 +32,59 @@ bot.use((ctx, next) => {
     next();
 });
 
+bot.catch((err) => {
+    console.log('Ooops', err);
+});
+
 bot.start((ctx) => {
     const message = ctx.i18n.t('main.hello');
     return ctx.reply(message);
 });
 
 bot.command('question', (ctx) => {
-    return ctx.reply('Вопрос',
-        Markup.inlineKeyboard([
-            [Markup.callbackButton('Ответ 1', 1)],
-            [Markup.callbackButton('Ответ 2', 2)],
-            [Markup.callbackButton('Ответ 3', 3)]
-        ]).extra()
-    );
+    utils.getQuestion(ctx.message.id, 'en', function(question) {
+        if (question) {
+            let answers = question.answers.map((answer, index) => {
+                let callbackData = {
+                    question: question._id,
+                    isCorrect: false
+                };
+
+                if (index === 0) {
+                    callbackData.isCorrect = true;
+                }
+
+                return [Markup.callbackButton(answer, JSON.stringify(callbackData))];
+            });
+
+            return ctx.reply(question.question,
+                Markup.inlineKeyboard(utils.shuffle(answers)).extra()
+            );
+        } else {
+            return ctx.reply(ctx.i18n.t('question.not'));
+        }
+    });
 });
 
 bot.on('callback_query', (ctx) => {
-    return ctx.reply('Your answer!');
-});
+    let data = false;
+    try {
+        data = JSON.parse(ctx.update.callback_query.data);
+    } catch (err) {
+        console.log(err);
+    }
 
+    let message = '';
+    if (data.question !== undefined) {
+        let text = 'result.incorrect';
+        if (data.isCorrect) {
+            text = 'result.correct';
+        }
+
+        message = ctx.i18n.t(text);
+    }
+
+    return ctx.replyWithMarkdown(message);
+});
 
 bot.startPolling();
