@@ -17,15 +17,17 @@ const i18n = new TelegrafI18n({
     directory: path.resolve(__dirname, 'locales')
 });
 
-const session = new RedisSession({
-    store: {
-        host: config.get('redis.host'),
-        port: config.get('redis.port'),
-        db: config.get('redis.db')
-    }
-});
+// const session = new RedisSession({
+//     store: {
+//         host: config.get('redis.host'),
+//         port: config.get('redis.port'),
+//         db: config.get('redis.db')
+//     }
+// });
+//
+// bot.use(session.middleware());
 
-bot.use(session.middleware());
+bot.use(Telegraf.session());
 bot.use(i18n.middleware());
 
 bot.use((ctx, next) => {
@@ -39,6 +41,15 @@ bot.catch((err) => {
 bot.start((ctx) => {
     const message = ctx.i18n.t('main.hello');
     return ctx.reply(message);
+});
+
+bot.command('language', (ctx) => {
+    return ctx.reply(ctx.i18n.t('language.choose'),
+        Markup.inlineKeyboard([
+            Markup.callbackButton(ctx.i18n.t('language.en'), JSON.stringify({language: 'en'})),
+            Markup.callbackButton(ctx.i18n.t('language.ru'), JSON.stringify({language: 'ru'}))
+        ]).extra()
+    );
 });
 
 bot.command('question', (ctx) => {
@@ -82,6 +93,12 @@ bot.on('callback_query', (ctx) => {
         }
 
         message = ctx.i18n.t(text);
+    } else if (data.language !== undefined) {
+        let newLanguage = data.language;
+        ctx.i18n.locale(newLanguage);
+        console.log(ctx.i18n);
+
+        message = ctx.i18n.t('language.changed');
     }
 
     return ctx.replyWithMarkdown(message);

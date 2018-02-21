@@ -1,2 +1,15 @@
 main:
-  hello: Привет!
+  hello: Привет, ${from.first_name}!
+
+result:
+  correct: Ответ *правильный*!
+  incorrect: Ответ *неправильный* :(
+
+question:
+  not: Вы сыграли все вопросы на своем языке ¯\_(ツ)_/¯
+
+language:
+  choose: Выберите язык
+  changed: Язык изменен
+  en: Английский
+  ru: Русский
