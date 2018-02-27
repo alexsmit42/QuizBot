@@ -4,6 +4,31 @@ let Question = require('../models/question');
 
 module.exports = {
 
+    saveQuestion(question) {
+
+        let _id= question.id;
+        if (!_id) {
+            _id = new mongoose.Types.ObjectId()
+        }
+
+        let data = {
+            _id: _id,
+            question: question.caption,
+            answers: question.answers,
+            locale: question.locale
+        };
+
+        return new Promise((resolve, reject) => {
+            Question.create(data, function(err) {
+                if (!err) {
+                    resolve('Ok!');
+                } else {
+                    reject(new Error(err));
+                }
+            })
+        });
+    },
+
     getQuestion(user, locale, callback) {
         Log.find({
             user: user

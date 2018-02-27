@@ -12,27 +12,25 @@ let bot = new Telegraf(config.get('token'));
 
 const i18n = new TelegrafI18n({
     defaultLanguage: 'en',
-    allowMissing: true,
     useSession: true,
     directory: path.resolve(__dirname, 'locales')
 });
 
-// const session = new RedisSession({
-//     store: {
-//         host: config.get('redis.host'),
-//         port: config.get('redis.port'),
-//         db: config.get('redis.db')
-//     }
-// });
-//
-// bot.use(session.middleware());
+const session = new RedisSession({
+    store: {
+        host: config.get('redis.host'),
+        port: config.get('redis.port'),
+        db: config.get('redis.db')
+    }
+});
 
-bot.use(Telegraf.session());
+bot.use(session.middleware());
 bot.use(i18n.middleware());
 
 bot.use((ctx, next) => {
     next();
 });
+
 
 bot.catch((err) => {
     console.log('Ooops', err);
@@ -53,7 +51,7 @@ bot.command('language', (ctx) => {
 });
 
 bot.command('question', (ctx) => {
-    utils.getQuestion(ctx.message.id, 'en', function(question) {
+    utils.getQuestion(ctx.message.id, ctx.session.__language_code, function(question) {
         if (question) {
             let answers = question.answers.map((answer, index) => {
                 let callbackData = {
@@ -96,7 +94,7 @@ bot.on('callback_query', (ctx) => {
     } else if (data.language !== undefined) {
         let newLanguage = data.language;
         ctx.i18n.locale(newLanguage);
-        console.log(ctx.i18n);
+        ctx.session.__language_code = newLanguage;
 
         message = ctx.i18n.t('language.changed');
     }

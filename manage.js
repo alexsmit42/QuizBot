@@ -3,15 +3,13 @@ let Question = require('./models/question');
 
 let data = {
     _id: new mongoose.Types.ObjectId(),
-    question: 'The capital of Poland',
+    question: 'Столица Польши',
     answers: [
-        'Warsaw',
-        'Gdansk',
-        'Wroclaw',
-        'Krakow'
+        'Варшава',
+        'Гданьск',
+        'Вроцлав',
+        'Краков'
     ],
-    locale: 'en'
+    locale: 'ru'
 };
-Question.create(data, function(err) {
-    console.log(err)
-});
+Question.create(data);

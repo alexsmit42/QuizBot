@@ -10,8 +10,11 @@
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.5.1",
+    "body-parser": "^1.18.2",
     "botgram": "^2.0.1",
     "config": "^1.29.4",
+    "express": "^4.16.2",
+    "html": "^1.0.0",
     "i18n": "^0.8.3",
     "js-yaml": "^3.10.0",
     "mongoose": "^5.0.5",

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz Bot</title>
+
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+
+        #question-form .answers:first-child {
+            border: 2px solid black;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div id="question-form">
+            <div class="caption">
+                <input type="text" v-model="question.caption" placeholder="Question" />
+                <select v-model="question.locale" v-cloak>
+                    <option v-for="locale, code in locales" :value="code">
+                        {{ locale }}
+                    </option>
+                </select>
+            </div>
+            <div class="answers">
+                <input type="text" v-for="answer, index in question.answers" v-model="question.answers[index]" />
+            </div>
+            <div>
+                <button @click="clear">Clear</button>
+                <button @click="save">Save</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+
+<script>
+    const DEFAULT_LOCALE = 'en';
+
+    let app = new Vue({
+        el: '#root',
+        data: {
+            question: {
+                id: 0,
+                caption: '',
+                answers: ['', '', '', ''],
+                locale: DEFAULT_LOCALE
+            },
+            questions: [],
+            locales: {
+                'en': 'English',
+                'ru': 'Russian'
+            },
+            errors: {
+
+            }
+        },
+        methods: {
+            clear() {
+                this.question.caption = '';
+                this.question.answers = this.question.answers.map(answer => '');
+                this.question.locale = DEFAULT_LOCALE;
+            },
+            save() {
+                if (this.question.caption.trim() === '' || this.question.answers.some(answer => answer.trim() === '')) {
+                    return false;
+                }
+
+                fetch('/save', {
+                    method: 'post',
+                    body: JSON.stringify(this.question),
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                }).then(res => {
+                    console.log(res);
+                });
+            }
+        }
+    });
+</script>
+
+</html>
