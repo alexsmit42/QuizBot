@@ -4,14 +4,42 @@
     <meta charset="UTF-8">
     <title>Quiz Bot</title>
 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
     <style>
         [v-cloak] {
             display: none;
         }
 
-        #question-form .answers:first-child {
-            border: 2px solid black;
+        input {
+            margin-right: 10px;
         }
+
+        #root {
+            margin: 20px;
+        }
+
+        #question-form {
+            margin-bottom: 30px;
+        }
+
+        #question-form .caption, #question-form .answers {
+            margin-bottom: 10px;
+        }
+
+        #question-form .answers:first-child input {
+            border: 4px solid black;
+        }
+
+        #question-list .answers span {
+            margin-right: 15px;
+        }
+
+        #questions-list .question-item {
+            padding: 0 10px;
+            border-bottom: 1px solid black;
+        }
+
     </style>
 </head>
 <body>
@@ -31,6 +59,19 @@
             <div>
                 <button @click="clear">Clear</button>
                 <button @click="save">Save</button>
+            </div>
+        </div>
+
+        <div id="questions-list" v-cloak>
+            <div class="question-item" v-for="question, index in questions">
+                <div class="caption">
+                    ({{ question.locale }}) {{ question.caption }}
+                </div>
+                <div class="answers">
+                    <span v-for="answer, key in questions[index].answers">
+                        {{ key + 1 }}. {{ answer }}
+                    </span>
+                </div>
             </div>
         </div>
     </div>
@@ -59,6 +100,21 @@
 
             }
         },
+        created() {
+            fetch('/questions', {
+                method: 'get',
+                headers: {
+                    'content-type': 'application/json'
+                }
+            })
+            .then(function(res){ return res.json(); })
+            .then(res => {
+                if (res.success) {
+                    this.questions = res.questions;
+                    console.log(this.questions)
+                }
+            });
+        },
         methods: {
             clear() {
                 this.question.caption = '';
@@ -70,14 +126,24 @@
                     return false;
                 }
 
+                let newQuestion = this.question;
+
                 fetch('/save', {
                     method: 'post',
                     body: JSON.stringify(this.question),
                     headers: {
                         'content-type': 'application/json'
                     }
-                }).then(res => {
-                    console.log(res);
+                })
+                .then(function(res){ return res.json(); })
+                .then(res => {
+                    if (res.success) {
+                        this.clear();
+
+                        this.questions.push(newQuestion);
+
+                        console.log('Question added');
+                    }
                 });
             }
         }

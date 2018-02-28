@@ -3,7 +3,7 @@ let Schema = mongoose.Schema;
 
 let QuestionSchema = Schema({
     _id: Schema.Types.ObjectId,
-    question: {
+    caption: {
         type: String,
         required: true
     },

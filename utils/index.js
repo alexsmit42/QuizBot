@@ -13,7 +13,7 @@ module.exports = {
 
         let data = {
             _id: _id,
-            question: question.caption,
+            caption: question.caption,
             answers: question.answers,
             locale: question.locale
         };
@@ -46,6 +46,15 @@ module.exports = {
             });
         }).catch(err => {
             // console.log(err);
+        });
+    },
+
+    getQuestions(req, res){
+        Question.find().then(questions => {
+            res.json({
+                success: true,
+                questions: questions
+            });
         });
     },
 

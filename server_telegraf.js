@@ -66,7 +66,7 @@ bot.command('question', (ctx) => {
                 return [Markup.callbackButton(answer, JSON.stringify(callbackData))];
             });
 
-            return ctx.reply(question.question,
+            return ctx.reply(question.caption,
                 Markup.inlineKeyboard(utils.shuffle(answers)).extra()
             );
         } else {

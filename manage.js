@@ -3,7 +3,7 @@ let Question = require('./models/question');
 
 let data = {
     _id: new mongoose.Types.ObjectId(),
-    question: 'Столица Польши',
+    caption: 'Столица Польши',
     answers: [
         'Варшава',
         'Гданьск',

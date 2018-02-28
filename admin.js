@@ -23,5 +23,7 @@ app.post('/save', function(req, res) {
         });
 });
 
+app.get('/questions', utils.getQuestions);
+
 let server = require('http').createServer(app);
 server.listen(3000);
