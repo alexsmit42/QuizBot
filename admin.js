@@ -18,9 +18,22 @@ app.post('/save', function(req, res) {
     utils.saveQuestion(question)
         .then((msg) => {
             res.json({
-                'success': true
+                success: true
             });
         });
+});
+
+app.post('/remove', function(req, res) {
+    let _id = req.body._id;
+
+    utils.removeQuestion(_id)
+        .then((success) => {
+            if (success) {
+                res.json({
+                    success: true
+                });
+            }
+        })
 });
 
 app.get('/questions', utils.getQuestions);

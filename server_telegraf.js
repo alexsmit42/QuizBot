@@ -11,7 +11,7 @@ let utils = require('./utils');
 let bot = new Telegraf(config.get('token'));
 
 const i18n = new TelegrafI18n({
-    defaultLanguage: 'en',
+    defaultLanguage: 'ru',
     useSession: true,
     directory: path.resolve(__dirname, 'locales')
 });
@@ -51,7 +51,7 @@ bot.command('language', (ctx) => {
 });
 
 bot.command('question', (ctx) => {
-    utils.getQuestion(ctx.message.id, ctx.session.__language_code, function(question) {
+    utils.getQuestion(ctx.from.id, ctx.session.__language_code, function(question) {
         if (question) {
             let answers = question.answers.map((answer, index) => {
                 let callbackData = {
@@ -75,6 +75,34 @@ bot.command('question', (ctx) => {
     });
 });
 
+bot.command('myscore', (ctx) => {
+    utils.getScore(ctx.from.id).then(
+        score => {
+            if (!score) {
+                return ctx.reply('score.no_play');
+            }
+
+            let messages = [];
+            let totalScore = {isCorrect: 0, total: 0};
+            for (let locale in score) {
+                messages.push(ctx.i18n.t('score.locale.' + locale) + ': ' + ctx.i18n.t('score.counts', score[locale]));
+                totalScore.isCorrect += score[locale].isCorrect;
+                totalScore.total += score[locale].total;
+            }
+            messages.unshift(ctx.i18n.t('score.locale.all') + ': ' + ctx.i18n.t('score.counts', totalScore));
+
+            return ctx.replyWithHTML(messages.join('\n'));
+        }
+    );
+});
+
+bot.command('top', (ctx) => {
+   utils.getTop()
+       .then(top => {
+           ctx.reply(top);
+       });
+});
+
 bot.on('callback_query', (ctx) => {
     let data = false;
     try {
@@ -89,6 +117,8 @@ bot.on('callback_query', (ctx) => {
         if (data.isCorrect) {
             text = 'result.correct';
         }
+
+        utils.setLog(ctx.from.id, data.question, data.isCorrect);
 
         message = ctx.i18n.t(text);
     } else if (data.language !== undefined) {

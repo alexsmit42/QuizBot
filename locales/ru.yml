@@ -13,3 +13,11 @@ language:
   changed: Язык изменен
   en: Английский
   ru: Русский
+
+score:
+  no_play: Вы еще не сыграли ни одного вопроса
+  locale:
+    all: Всего
+    ru: На русском
+    en: На английском
+  counts: <strong>${isCorrect}</strong>/<strong>${total}</strong>
