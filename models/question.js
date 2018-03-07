@@ -14,11 +14,7 @@ let QuestionSchema = Schema({
     locale: {
         type: String,
         required: true
-    },
-    createDate: {
-        type: Date,
-        default: Date.now
-    },
+    }
 });
 
 module.exports = mongoose.model('Question', QuestionSchema);

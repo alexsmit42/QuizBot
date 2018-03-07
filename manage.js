@@ -12,4 +12,6 @@ let data = {
     ],
     locale: 'ru'
 };
-Question.create(data);
+Question.create(data, function() {
+    console.log(111)
+});

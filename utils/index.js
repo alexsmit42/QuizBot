@@ -30,22 +30,29 @@ module.exports = {
     },
 
     getQuestion(user, locale, callback) {
-        Log.find({
-            user: user
-        }).then(logs => {
-            logs = logs || [];
-
-            logs = logs.map(log => log.question);
-            Question.findOne({
-                locale: locale,
-                _id: {$nin: logs}
-            }).then(question => {
-                callback(question);
-            }).catch(err => {
-
-            });
+        // Log.find({
+        //     user: user
+        // }).then(logs => {
+        //     logs = logs || [];
+        //
+        //     logs = logs.map(log => log.question);
+        //     Question.findOne({
+        //         locale: locale,
+        //         _id: {$nin: logs}
+        //     }).then(question => {
+        //         callback(question);
+        //     }).catch(err => {
+        //         console.log(err);
+        //     });
+        // }).catch(err => {
+        //     console.log(err);
+        // });
+        Question.findOne({
+            locale: locale
+        }).then(question => {
+            callback(question);
         }).catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     },
 

@@ -34,7 +34,7 @@ bot.on('text', (ctx) => {
         if (text.toLowerCase() === 'пока') {
             ctx.reply('Покя');
         } else if (text.split(' ').length === 1) {
-            ctx.reply(`Ууу, ${text}, уууу сука(и)`);
+            ctx.reply(`Ууу, ${text}, уууу сука`);
         } else {
             switch(getRandomInt(3)) {
                 case 0:

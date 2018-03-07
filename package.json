@@ -12,16 +12,17 @@
     "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
     "botgram": "^2.0.1",
-    "config": "^1.29.4",
+    "config": "^1.30.0",
     "express": "^4.16.2",
     "html": "^1.0.0",
     "i18n": "^0.8.3",
     "js-yaml": "^3.10.0",
-    "mongoose": "^5.0.5",
+    "mongoose": "^5.0.7",
     "redis": "^2.8.0",
-    "telegraf": "^3.18.0",
+    "telegraf": "^3.19.0",
     "telegraf-i18n": "^6.0.4",
-    "telegraf-session-redis": "^5.0.0"
+    "telegraf-session-redis": "^5.0.0",
+    "twitter": "^1.7.1"
   },
   "devDependencies": {
     "bot-brother": "^2.1.5"
