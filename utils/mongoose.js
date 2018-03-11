@@ -3,11 +3,8 @@ let config = require('config');
 
 mongoose.Promise = global.Promise;
 mongoose.connect(
-    config.get('db.connection') + '/' + config.get('db.name'),
-    {
-        autoReconnect: true
-    }
+    'mongodb://' + config.get('db.connection') + '/' + config.get('db.name')
 ).catch(err => {
-
+    console.log(err);
 });
 module.exports = mongoose;
