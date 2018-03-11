@@ -21,7 +21,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             Question.update({_id: _id}, data, {upsert: true, setDefaultsOnInsert: true}, function(err) {
                 if (!err) {
-                    resolve('Ok!');
+                    resolve(_id);
                 } else {
                     reject(new Error(err));
                 }

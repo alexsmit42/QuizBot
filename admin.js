@@ -17,10 +17,10 @@ app.post('/save', function(req, res) {
 
     utils.saveQuestion(question)
         .then(
-            msg => {
+            _id => {
             res.json({
                     success: true,
-                    _id: question._id
+                    _id: _id
             });
             }
         );
