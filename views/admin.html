@@ -40,11 +40,17 @@
             border-bottom: 1px solid black;
         }
 
+        #questions-list .question-item a {
+            margin-right: 10px;
+        }
+
     </style>
 </head>
 <body>
     <div id="root">
         <div id="question-form">
+            <h6 v-if="question._id">{{ question.caption }}</h6>
+            <h6 v-else>New question</h6>
             <div class="caption">
                 <input type="text" v-model="question.caption" placeholder="Question" />
                 <select v-model="question.locale" v-cloak>
@@ -65,7 +71,7 @@
         <div id="questions-list" v-cloak>
             <div class="question-item" v-for="question, index in questions">
                 <div class="caption">
-                    ({{ question.locale }}) {{ question.caption }}
+                    ({{ question.locale }}) <a href="#" @click="edit(question)">{{ question.caption }}</a> <a href="#" @click="remove(question)">[Удалить]</a>
                 </div>
                 <div class="answers">
                     <span v-for="answer, key in questions[index].answers">
@@ -86,7 +92,7 @@
         el: '#root',
         data: {
             question: {
-                id: 0,
+                _id: 0,
                 caption: '',
                 answers: ['', '', '', ''],
                 locale: DEFAULT_LOCALE
@@ -111,12 +117,12 @@
             .then(res => {
                 if (res.success) {
                     this.questions = res.questions;
-                    console.log(this.questions)
                 }
             });
         },
         methods: {
             clear() {
+                this.question._id = 0;
                 this.question.caption = '';
                 this.question.answers = this.question.answers.map(answer => '');
                 this.question.locale = DEFAULT_LOCALE;
@@ -126,7 +132,7 @@
                     return false;
                 }
 
-                let newQuestion = this.question;
+                let newQuestion = Object.assign({}, this.question);
 
                 fetch('/save', {
                     method: 'post',
@@ -139,10 +145,25 @@
                 .then(res => {
                     if (res.success) {
                         this.clear();
-
-                        this.questions.push(newQuestion);
-
-                        console.log('Question added');
+                        this.questions.unshift(newQuestion);
+                    }
+                });
+            },
+            edit(question) {
+                this.question = Object.assign({}, question);
+            },
+            remove(question) {
+                fetch('/remove', {
+                    method: 'post',
+                    body: JSON.stringify({_id: question._id}),
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                })
+                .then(function(res){ return res.json(); })
+                .then(res => {
+                    if (res.success) {
+                        this.questions.splice(this.questions.indexOf(question), 1);
                     }
                 });
             }

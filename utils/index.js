@@ -47,15 +47,15 @@ module.exports = {
             user: user
         }).then(
             logs => {
-            logs = logs || [];
+                logs = logs || [];
 
-            logs = logs.map(log => log.question);
-            Question.findOne({
-                locale: locale,
-                _id: {$nin: logs}
-            }).then(question => {
-                callback(question);
-            });
+                logs = logs.map(log => log.question);
+                Question.findOne({
+                    locale: locale,
+                    _id: {$nin: logs}
+                }).then(question => {
+                    callback(question);
+                });
             },
             err => {
                 console.log(err);
