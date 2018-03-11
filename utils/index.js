@@ -6,7 +6,7 @@ module.exports = {
 
     saveQuestion(question) {
 
-        let _id= question.id;
+        let _id = question._id;
         if (!_id) {
             _id = new mongoose.Types.ObjectId()
         }
@@ -19,45 +19,52 @@ module.exports = {
         };
 
         return new Promise((resolve, reject) => {
-            Question.create(data, function(err) {
+            Question.update({_id: _id}, data, {upsert: true, setDefaultsOnInsert: true}, function(err) {
                 if (!err) {
                     resolve('Ok!');
                 } else {
                     reject(new Error(err));
                 }
-            })
+            });
+        });
+    },
+
+    removeQuestion(_id) {
+
+        return new Promise((resolve, reject) => {
+            Question.deleteOne({_id: _id}, function(err){
+                if (!err) {
+                    resolve(true);
+                } else {
+                    reject(new Error(err));
+                }
+            });
         });
     },
 
     getQuestion(user, locale, callback) {
-        // Log.find({
-        //     user: user
-        // }).then(logs => {
-        //     logs = logs || [];
-        //
-        //     logs = logs.map(log => log.question);
-        //     Question.findOne({
-        //         locale: locale,
-        //         _id: {$nin: logs}
-        //     }).then(question => {
-        //         callback(question);
-        //     }).catch(err => {
-        //         console.log(err);
-        //     });
-        // }).catch(err => {
-        //     console.log(err);
-        // });
-        Question.findOne({
-            locale: locale
-        }).then(question => {
-            callback(question);
-        }).catch(err => {
-            console.log(err);
-        });
+        Log.find({
+            user: user
+        }).then(
+            logs => {
+            logs = logs || [];
+
+            logs = logs.map(log => log.question);
+            Question.findOne({
+                locale: locale,
+                _id: {$nin: logs}
+            }).then(question => {
+                callback(question);
+            });
+            },
+            err => {
+                console.log(err);
+            }
+        );
     },
 
     getQuestions(req, res){
-        Question.find().then(questions => {
+        Question.find().sort('-createDate').then(questions => {
             res.json({
                 success: true,
                 questions: questions
@@ -71,6 +78,49 @@ module.exports = {
 
         let log = new Log(params);
         log.save();
+    },
+
+    getScore(user) {
+        return new Promise((resolve) => {
+            Log.find({user: user})
+                .populate('question')
+                .exec()
+                .then(
+                    logs => {
+                        if (!logs.length) {
+                            resolve(false);
+                        }
+
+                        let counts = {};
+                        logs.forEach(function(log) {
+                            let locale = log.question.locale;
+
+                            counts[locale] = counts[locale] || {'isCorrect': 0, 'total': 0};
+
+                            counts[locale].isCorrect += +log.isCorrectly;
+                            counts[locale].total++;
+                        });
+
+                        resolve(counts);
+                    }
+                );
+        });
+    },
+
+    getTop() {
+        return Log.aggregate([
+            {
+                $group: {
+                    _id: '$user',
+                    count: {$sum: 1}
+                },
+            },
+            {
+                $sort: {
+                    count: -1
+                }
+            }
+        ]);
     },
 
     shuffle(arr) {
