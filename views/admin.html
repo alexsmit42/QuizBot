@@ -125,7 +125,6 @@
                 this.question._id = 0;
                 this.question.caption = '';
                 this.question.answers = this.question.answers.map(answer => '');
-                this.question.locale = DEFAULT_LOCALE;
             },
             save() {
                 if (this.question.caption.trim() === '' || this.question.answers.some(answer => answer.trim() === '')) {
@@ -145,6 +144,7 @@
                 .then(res => {
                     if (res.success) {
                         this.clear();
+                        newQuestion._id = res._id;
                         this.questions.unshift(newQuestion);
                     }
                 });

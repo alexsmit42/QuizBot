@@ -18,13 +18,13 @@ app.post('/save', function(req, res) {
     utils.saveQuestion(question)
         .then(
             _id => {
-            res.json({
+                res.json({
                     success: true,
                     _id: _id
-            });
+                });
             }
         );
-        });
+});
 
 app.post('/remove', function(req, res) {
     let _id = req.body._id;
