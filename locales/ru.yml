@@ -7,6 +7,7 @@ result:
 
 question:
   not: Вы сыграли все вопросы на своем языке ¯\_(ツ)_/¯
+  played: Вы уже играли этот вопрос
 
 language:
   choose: Выберите язык
@@ -21,3 +22,7 @@ score:
     ru: На русском
     en: На английском
   counts: <strong>${isCorrect}</strong>/<strong>${total}</strong>
+
+top:
+  title: Рейтинг пользователей
+  count: ${pluralize(count, 'ответ', 'ответа', 'ответов')}

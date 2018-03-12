@@ -1,6 +1,7 @@
 let mongoose = require('../utils/mongoose');
 let Log = require('../models/log');
 let Question = require('../models/question');
+let logger = require('./logger');
 
 module.exports = {
 
@@ -23,6 +24,7 @@ module.exports = {
                 if (!err) {
                     resolve(_id);
                 } else {
+                    logger.error(err);
                     reject(new Error(err));
                 }
             });
@@ -30,12 +32,12 @@ module.exports = {
     },
 
     removeQuestion(_id) {
-
         return new Promise((resolve, reject) => {
             Question.deleteOne({_id: _id}, function(err){
                 if (!err) {
                     resolve(true);
                 } else {
+                    logger.error(err);
                     reject(new Error(err));
                 }
             });
@@ -58,7 +60,7 @@ module.exports = {
                 });
             },
             err => {
-                console.log(err);
+                logger.error(err);
             }
         );
     },
@@ -72,12 +74,27 @@ module.exports = {
         });
     },
 
+    isPlayedQuestion(user, question) {
+        return new Promise((resolve) => {
+            Log.find({user: user, question: question}).then(
+                log => {
+                    resolve(!!log.length);
+                }
+            );
+        });
+    },
+
     setLog(user, question, isCorrectly) {
         let params = {user, question, isCorrectly};
         params._id = new mongoose.Types.ObjectId();
 
-        let log = new Log(params);
-        log.save();
+        Log.find({user: user, question: question}).then(
+            log => {
+                if (!log.length) {
+                    Log.create(params);
+                }
+            }
+        );
     },
 
     getScore(user) {
@@ -109,6 +126,11 @@ module.exports = {
 
     getTop() {
         return Log.aggregate([
+            {
+                $match: {
+                    isCorrectly: true
+                }
+            },
             {
                 $group: {
                     _id: '$user',

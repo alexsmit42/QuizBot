@@ -4,14 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
-    "botgram": "^2.0.1",
     "config": "^1.30.0",
     "express": "^4.16.2",
     "html": "^1.0.0",
@@ -22,9 +21,9 @@
     "telegraf": "^3.19.0",
     "telegraf-i18n": "^6.0.4",
     "telegraf-session-redis": "^5.0.0",
-    "twitter": "^1.7.1"
+    "winston": "^3.0.0-rc2"
   },
   "devDependencies": {
-    "bot-brother": "^2.1.5"
+    "jest": "^22.4.2"
   }
 }

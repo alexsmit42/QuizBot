@@ -1,10 +1,11 @@
 let mongoose = require('mongoose');
 let config = require('config');
+let logger = require('./logger');
 
 mongoose.Promise = global.Promise;
 mongoose.connect(
-    'mongodb://' + config.get('db.connection') + '/' + config.get('db.name')
+    config.get('db.connection') + '/' + config.get('db.name')
 ).catch(err => {
-    console.log(err);
+    logger.error(err);
 });
 module.exports = mongoose;

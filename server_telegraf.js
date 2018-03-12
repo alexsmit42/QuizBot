@@ -1,14 +1,19 @@
+global.__base = __dirname;
+
 let Telegraf = require('telegraf');
 let TelegrafI18n = require('telegraf-i18n');
 let RedisSession = require('telegraf-session-redis');
 
 const Markup = require('telegraf/markup');
+const Telegram = require('telegraf/telegram');
 
 let config = require('config');
 let path = require('path');
 let utils = require('./utils');
+let logger = require('./utils/logger');
 
 let bot = new Telegraf(config.get('token'));
+let telegram = new Telegram(config.get('token'));
 
 const i18n = new TelegrafI18n({
     defaultLanguage: 'ru',
@@ -94,13 +99,35 @@ bot.command('myscore', (ctx) => {
             return ctx.replyWithHTML(messages.join('\n'));
         }
     );
+
+    logger.info(`User ${ctx.from.id} looked score`);
 });
 
 bot.command('top', (ctx) => {
    utils.getTop()
        .then(top => {
-           ctx.reply(top);
+           const members = top.map(async (user) => {
+               return {
+                   count: user.count,
+                   member: await telegram.getChatMember(ctx.chat.id, user._id)
+               }
+           });
+
+           Promise.all(members).then(
+               members => {
+                   let messages = [];
+                   messages.push(ctx.i18n.t('top.title') + '\n');
+
+                   members.forEach((member, index) => {
+                       messages.push(`${index + 1}. ${member.member.user.first_name} ${member.member.user.last_name} - ${ctx.i18n.t('top.count', {count: member.count})}`);
+                   });
+
+                   return ctx.replyWithHTML(messages.join('\n'));
+               }
+           );
        });
+
+    logger.info(`User ${ctx.from.id} looked top`);
 });
 
 bot.on('callback_query', (ctx) => {
@@ -111,25 +138,36 @@ bot.on('callback_query', (ctx) => {
         console.log(err);
     }
 
-    let message = '';
-    if (data.question !== undefined) {
-        let text = 'result.incorrect';
-        if (data.isCorrect) {
-            text = 'result.correct';
+    let user = ctx.from.id;
+
+    (async() => {
+        let message = '';
+        if (data.question !== undefined) {
+            let isPlayedQuestion = await utils.isPlayedQuestion(user, data.question);
+
+            let text = 'question.played';
+
+            if (!isPlayedQuestion) {
+                text = 'result.incorrect';
+                if (data.isCorrect) {
+                    text = 'result.correct';
+                }
+
+                utils.setLog(user, data.question, data.isCorrect);
+            }
+
+            message = ctx.i18n.t(text);
+
+        } else if (data.language !== undefined) {
+            let newLanguage = data.language;
+            ctx.i18n.locale(newLanguage);
+            ctx.session.__language_code = newLanguage;
+
+            message = ctx.i18n.t('language.changed');
         }
 
-        utils.setLog(ctx.from.id, data.question, data.isCorrect);
-
-        message = ctx.i18n.t(text);
-    } else if (data.language !== undefined) {
-        let newLanguage = data.language;
-        ctx.i18n.locale(newLanguage);
-        ctx.session.__language_code = newLanguage;
-
-        message = ctx.i18n.t('language.changed');
-    }
-
-    return ctx.replyWithMarkdown(message);
+        return ctx.replyWithMarkdown(message);
+    })();
 });
 
 bot.startPolling();
